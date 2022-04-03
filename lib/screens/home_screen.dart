@@ -23,7 +23,8 @@ class HomePage extends ConsumerWidget{
               children: [
                 //User Profile
                 FutureBuilder(
-                future: getUserProfiles(FirebaseAuth.instance.currentUser.phoneNumber),
+                future: getUserProfiles(context,
+                    FirebaseAuth.instance.currentUser.phoneNumber),
                 builder: (context, snapshot){
                   if(snapshot.connectionState == ConnectionState.waiting)
                     return Center(child: CircularProgressIndicator(),);
