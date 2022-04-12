@@ -41,6 +41,9 @@ dependencies:
   flutter_rating_bar: any
   intl: any
   flutter_datetime_picker: any
+  ntp: any
+  add_2_calendar: any
+  dcdg: any
 
 
 dev_dependencies:

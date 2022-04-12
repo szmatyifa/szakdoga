@@ -1,10 +1,13 @@
 
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:barber_shop/cloud_firestore/all_salon_ref.dart';
 import 'package:barber_shop/model/City_model.dart';
 import 'package:barber_shop/model/barber_model.dart';
+import 'package:barber_shop/model/booking_model.dart';
 import 'package:barber_shop/model/salon_model.dart';
 import 'package:barber_shop/state/state_management.dart';
 import 'package:barber_shop/utils/utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +35,7 @@ class BookingScreen extends ConsumerWidget{
     return SafeArea(
         child: Scaffold(
           key:scaffoldKey,
+          appBar: AppBar(title: Text('Booking'),backgroundColor: Color(0xFF383838),),
           resizeToAvoidBottomInset: true,
           backgroundColor: Color(0xFFFDF9EE),
           body: Column(
@@ -223,9 +227,9 @@ class BookingScreen extends ConsumerWidget{
                             itemSize: 16,
                             allowHalfRating: true,
                             initialRating: barbers[index].rating,
+                            ignoreGestures: true,
                             direction: Axis.horizontal,
                             itemCount: 5,
-                            onRatingUpdate: (value){},
                             itemBuilder: (context,_) => Icon(Icons.star, color:Colors.amber),
                             itemPadding: const EdgeInsets.all(4),
                           ),
@@ -265,7 +269,7 @@ class BookingScreen extends ConsumerWidget{
               GestureDetector(onTap: (){
                 DatePicker.showDatePicker(context,
                   showTitleActions: true,
-                  minTime: now,
+                  minTime: DateTime.now(),
                   maxTime: now.add(Duration(days: 31)),
                   onConfirm: (date)=> context.read(selectedDate).state = date); //you can pick date for the next 31 day
               }, child: Padding(
@@ -280,42 +284,63 @@ class BookingScreen extends ConsumerWidget{
         ),
         Expanded(
           child: FutureBuilder(
-            future: getTimeSlotOfBarber(barberModel, DateFormat('dd_MM_yyyy').format(context.read(selectedDate).state)),
+            future: getMaxAvailableTimeSlot(context.read(selectedDate).state),
             builder: (context,snapshot){
               if(snapshot.connectionState == ConnectionState.waiting)
                 return Center(child: CircularProgressIndicator(),);
-              else{
-                var listTimeSlot = snapshot.data as List <int>;
-                return GridView.builder(
-                    itemCount: TIME_SLOT.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3),
-                    itemBuilder: (context, index)=> GestureDetector(
-                      onTap: listTimeSlot.contains(index) ? null :  (){
-                        context.read(selectedTime).state = TIME_SLOT.elementAt(index);
-                        context.read(selectedTimeSlot).state = index;
-                      },
-                      child:  Card(
-                        color: listTimeSlot.contains(index) ? Colors.white10 : context.read(selectedTime).state ==
-                            TIME_SLOT.elementAt(index)
-                              ? Colors.white54
-                              : Colors.white,
-                        child: GridTile(
-                          child: Center(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('${TIME_SLOT.elementAt(index)}'),
-                                Text(listTimeSlot.contains(index) ? 'Full' : 'Available')
-                              ],
-                            ),
-                          ),
-                          header: context.read(selectedTime).state == TIME_SLOT.elementAt(index) ? Icon(Icons.check) : null,
-                        ),),
-                    ));
-              }
-          },
+              else
+                {
+                  var maxTimeSlot = snapshot.data as int;
+                  return  FutureBuilder(
+                    future: getTimeSlotOfBarber(barberModel, DateFormat('dd_MM_yyyy').format(context.read(selectedDate).state)),
+                    builder: (context,snapshot){
+                      if(snapshot.connectionState == ConnectionState.waiting)
+                        return Center(child: CircularProgressIndicator(),);
+                      else{
+                        var listTimeSlot = snapshot.data as List <int>;
+                        return GridView.builder(
+                            itemCount: TIME_SLOT.length,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3),
+                            itemBuilder: (context, index)=> GestureDetector(
+                              onTap: maxTimeSlot > index || listTimeSlot.contains(index)
+                                  ? null
+                                  :  (){
+                                context.read(selectedTime).state = TIME_SLOT.elementAt(index);
+                                context.read(selectedTimeSlot).state = index;
+                              },
+                              child:  Card(
+                                color:
+                                    listTimeSlot.contains(index)
+                                    ? Colors.white10 :
+                                      maxTimeSlot > index ? Colors.white60
+                                    : context.read(selectedTime).state ==
+                                    TIME_SLOT.elementAt(index)
+                                    ? Colors.white54
+                                    : Colors.white,
+                                child: GridTile(
+                                  child: Center(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text('${TIME_SLOT.elementAt(index)}'),
+                                        Text(listTimeSlot.contains(index)
+                                              ? 'Full'
+                                              : maxTimeSlot > index
+                                                ? 'Not Available'
+                                                : 'Available')
+                                      ],
+                                    ),
+                                  ),
+                                  header: context.read(selectedTime).state == TIME_SLOT.elementAt(index) ? Icon(Icons.check) : null,
+                                ),),
+                            ));
+                      }
+                    },
+                  );
+                }
+            }
           ),
         )
       ],
@@ -354,37 +379,47 @@ class BookingScreen extends ConsumerWidget{
       context.read(selectedDate).state.day,
       hour, //hour
       minutes,
-    ).millisecond;
-    var submitData = {
-      'barberId': context.read(selectedBarber).state.docId,
-      'barberName': context.read(selectedBarber).state.name,
-      'barberBook': context.read(selectedCity).state.name,
-      'customerName': context.read(userInformation).state.name,
-      'customerPhone': FirebaseAuth.instance.currentUser.phoneNumber,
-      'done': false,
-      'salonAddress':context.read(selectedSalon).state.address,
-      'salonId':context.read(selectedSalon).state.docId,
-      'salonname':context.read(selectedSalon).state.name,
-      'slot':context.read(selectedTimeSlot).state,
-      'timeStamp':timeStamp,
-      'time':'${context.read(selectedTime).state} - ${DateFormat('dd/MM/yyyy').format(context.read(selectedDate).state)}'
-    };
-    //Submit on Firestore
-    context.read(selectedBarber)
+    ).millisecondsSinceEpoch;
+    //Create booking Model
+    var bookingModel = BookingModel(
+        barberId: context.read(selectedBarber).state.docId,
+      barberName: context.read(selectedBarber).state.name,
+      cityBook: context.read(selectedCity).state.name,
+      customerName: context.read(userInformation).state.name,
+      customerPhone: FirebaseAuth.instance.currentUser.phoneNumber,
+      done: false,
+      salonAddress:context.read(selectedSalon).state.address,
+      salonId:context.read(selectedSalon).state.docId,
+      salonName:context.read(selectedSalon).state.name,
+      slot:context.read(selectedTimeSlot).state,
+      timeStamp:timeStamp,
+      time:'${context.read(selectedTime).state} - ${DateFormat('dd/MM/yyyy').format(context.read(selectedDate).state)}'
+    );
+
+    var batch = FirebaseFirestore.instance.batch();
+
+    DocumentReference barberBooking =
+    context
+        .read(selectedBarber)
         .state
         .reference
-        .collection('${DateFormat('dd_MM_yyyy')
-        .format(context
-        .read(selectedDate)
-        .state)}')
-    .doc(context.read(selectedTimeSlot).state.toString())
-    .set(submitData)
-    .then((value){
+        .collection('${DateFormat('dd_MM_yyyy').format(context.read(selectedDate).state)}')
+        .doc(context.read(selectedTimeSlot).state.toString());
+    DocumentReference userBooking = FirebaseFirestore.instance.collection('User')
+    .doc(FirebaseAuth.instance.currentUser.phoneNumber)
+    .collection('Booking_${FirebaseAuth.instance.currentUser.uid}')
+    .doc();
+
+    //Set for batch
+    batch.set(barberBooking,bookingModel.toJson());
+    batch.set(userBooking, bookingModel.toJson());
+    batch.commit().then((value) {
+
       Navigator.of(context).pop();
-        ScaffoldMessenger.of(scaffoldKey.currentContext)
-    .showSnackBar(SnackBar(content: Text('Booking was succesful'),
-        ));
-        //Reset value
+      ScaffoldMessenger.of(scaffoldKey.currentContext)
+          .showSnackBar(SnackBar(content: Text('Booking was succesful'),
+      ));
+      //Reset value
       context.read(selectedDate).state = DateTime.now();
       context.read(selectedBarber).state = BarberModel();
       context.read(selectedCity).state = CityModel();
@@ -393,7 +428,35 @@ class BookingScreen extends ConsumerWidget{
       context.read(selectedTime).state = '';
       context.read(selectedTimeSlot).state = -1;
 
+
+      //Create Event
+      final event = Event(
+          title: 'Barber Appointment',
+          description: 'Barber appointment ${context.read(selectedTime).state} - '
+              '${DateFormat('dd/MM/yyyy').format(context.read(selectedDate).state)}',
+          location: '${context.read(selectedSalon).state.address}',
+          startDate: DateTime(
+              context.read(selectedDate).state.year,
+              context.read(selectedDate).state.month,
+              context.read(selectedDate).state.day,
+              hour,
+              minutes
+
+          ),
+          endDate: DateTime(
+              context.read(selectedDate).state.year,
+              context.read(selectedDate).state.month,
+              context.read(selectedDate).state.day,
+              hour,
+              minutes+30
+
+          ),
+          iosParams: IOSParams(reminder: Duration(minutes: 30)),
+          androidParams: AndroidParams(emailInvites: [])
+      );
+      Add2Calendar.addEvent2Cal(event).then((value) {});
     });
+
 
   }
 

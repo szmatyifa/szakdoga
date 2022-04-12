@@ -4,6 +4,7 @@ import 'package:barber_shop/cloud_firestore/lookbook_ref.dart';
 import 'package:barber_shop/cloud_firestore/user_ref.dart';
 import 'package:barber_shop/model/image_model.dart';
 import 'package:barber_shop/model/user_model.dart';
+import 'package:barber_shop/state/state_management.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -62,8 +63,14 @@ class HomePage extends ConsumerWidget{
                           )
                         ],
                           crossAxisAlignment: CrossAxisAlignment.start,
-                        ),)
-                      ],),
+                        ),),
+                        context
+                            .read(userInformation)
+                            .state.isStaff ?
+                            IconButton(icon:Icon(Icons.admin_panel_settings,
+                                color: Colors.white), onPressed: ()=> Navigator.of(context).pushNamed('/staffHome'),) : Container()
+                      ],
+                      ),
                     );
                   }
                 }),
@@ -106,6 +113,7 @@ class HomePage extends ConsumerWidget{
                       ),
                     ),
                     Expanded(
+                      child: GestureDetector(onTap: () => Navigator.pushNamed(context, '/history'),
                       child: Container(
                         child: Card(
                           child: Padding(
@@ -119,7 +127,7 @@ class HomePage extends ConsumerWidget{
                             ),
                           ),
                         ),
-                      ),
+                      ),),
                     )
                   ],
                 ),),
@@ -147,7 +155,7 @@ class HomePage extends ConsumerWidget{
                     }),
                 //Lookbook
                 Padding(padding: const EdgeInsets.all(8), child: Row(children: [
-                  Text('LOOKBOOK', style: GoogleFonts.robotoMono(fontSize: 24),)
+                  Text('Hair styles:', style: GoogleFonts.robotoMono(fontSize: 24),)
                 ],),),
                 FutureBuilder(
                     future: getLookbook(),

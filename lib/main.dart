@@ -1,5 +1,7 @@
 import 'package:barber_shop/screens/booking_screen.dart';
 import 'package:barber_shop/screens/home_screen.dart';
+import 'package:barber_shop/screens/staff_home_screen.dart';
+import 'package:barber_shop/screens/user_history_screen.dart';
 import 'package:barber_shop/state/state_management.dart';
 import 'package:barber_shop/utils/utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:dcdg/dcdg.dart';
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +33,22 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings){
         switch(settings.name)
         {
+          case '/staffHome':
+            return PageTransition(
+                settings: settings,
+                child: StaffHome(),
+                type: PageTransitionType.fade);
+            break;
           case '/home':
             return PageTransition(
                 settings: settings,
                 child: HomePage(),
+                type: PageTransitionType.fade);
+            break;
+          case '/history':
+            return PageTransition(
+                settings: settings,
+                child: UserHistory(),
                 type: PageTransitionType.fade);
             break;
           case '/booking':
