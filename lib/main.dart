@@ -1,4 +1,5 @@
 import 'package:barber_shop/screens/booking_screen.dart';
+import 'package:barber_shop/screens/done_services_screen.dart';
 import 'package:barber_shop/screens/home_screen.dart';
 import 'package:barber_shop/screens/staff_home_screen.dart';
 import 'package:barber_shop/screens/user_history_screen.dart';
@@ -37,6 +38,12 @@ class MyApp extends StatelessWidget {
             return PageTransition(
                 settings: settings,
                 child: StaffHome(),
+                type: PageTransitionType.fade);
+            break;
+          case '/doneService':
+            return PageTransition(
+                settings: settings,
+                child: DoneService(),
                 type: PageTransitionType.fade);
             break;
           case '/home':

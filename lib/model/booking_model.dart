@@ -5,12 +5,16 @@ class BookingModel{
       barberId,
       barberName,
       cityBook,
+      customerId,
       customerName,
       customerPhone,
       salonAddress,
       salonId,
       salonName,
+      services,
       time;
+
+  double totalPrice;
   bool done;
   int slot, timeStamp;
 
@@ -22,14 +26,17 @@ class BookingModel{
       this.barberId,
       this.barberName,
       this.cityBook,
+      this.customerId,
       this.customerName,
       this.customerPhone,
       this.salonAddress,
       this.salonId,
       this.salonName,
+      this.services,
       this.time,
       this.done,
       this.slot,
+      this.totalPrice,
       this.timeStamp
     }
   );
@@ -38,14 +45,17 @@ class BookingModel{
     barberId = json['barberId'];
     barberName = json['barberName'];
     cityBook = json['cityBook'];
+    customerId = json['customerId'];
     customerName = json['customerName'];
     customerPhone = json['customerPhone'];
     salonAddress = json['salonAddress'];
     salonName = json['salonName'];
     salonId = json['salonId'];
+    services = json['services'];
     time = json['time'];
     done = json['done'] as bool;
     slot = int.parse(json['slot'] == null ? '-1' : json['slot'].toString());
+    totalPrice = double.parse(json['totalPrice'] == null ? '0' : json['totalPrice'].toString());
     timeStamp  = int.parse(json['timeStamp'] == null ? '0' : json['timeStamp'].toString());
 
   }
@@ -55,6 +65,7 @@ class BookingModel{
     data['barberId'] = this.barberId;
     data['barberName'] = this.barberName;
     data['cityBook'] = this.cityBook;
+    data['customerId'] = this.customerId;
     data['customerPhone'] = this.customerPhone;
     data['customerName'] = this.customerName;
     data['salonId'] = this.salonId;

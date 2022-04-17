@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">1076961395515-pc6imunga2rv4q9mq383f5frorocevjp.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">1076961395515</string>
+    <string name="google_api_key" translatable="false">AIzaSyBXV4MnfYNQHCbYyi9tbD4Qy1fkY9YODMQ</string>
+    <string name="google_app_id" translatable="false">1:1076961395515:android:81c6bc281d19dd0a096d1e</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBXV4MnfYNQHCbYyi9tbD4Qy1fkY9YODMQ</string>
+    <string name="google_storage_bucket" translatable="false">barbershop-76880.appspot.com</string>
+    <string name="project_id" translatable="false">barbershop-76880</string>
+</resources>

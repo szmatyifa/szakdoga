@@ -385,6 +385,7 @@ class BookingScreen extends ConsumerWidget{
         barberId: context.read(selectedBarber).state.docId,
       barberName: context.read(selectedBarber).state.name,
       cityBook: context.read(selectedCity).state.name,
+      customerId: FirebaseAuth.instance.currentUser.uid,
       customerName: context.read(userInformation).state.name,
       customerPhone: FirebaseAuth.instance.currentUser.phoneNumber,
       done: false,
@@ -405,10 +406,14 @@ class BookingScreen extends ConsumerWidget{
         .reference
         .collection('${DateFormat('dd_MM_yyyy').format(context.read(selectedDate).state)}')
         .doc(context.read(selectedTimeSlot).state.toString());
-    DocumentReference userBooking = FirebaseFirestore.instance.collection('User')
-    .doc(FirebaseAuth.instance.currentUser.phoneNumber)
-    .collection('Booking_${FirebaseAuth.instance.currentUser.uid}')
-    .doc();
+
+    DocumentReference userBooking = FirebaseFirestore.instance
+        .collection('User')
+        .doc(FirebaseAuth.instance.currentUser.phoneNumber)
+        .collection(
+          'Booking_${FirebaseAuth.instance.currentUser.uid}')
+        .doc(
+          '${context.read(selectedBarber).state.docId}_${DateFormat('dd_MM_yyyy').format(context.read(selectedDate).state)}');
 
     //Set for batch
     batch.set(barberBooking,bookingModel.toJson());
@@ -465,9 +470,9 @@ class BookingScreen extends ConsumerWidget{
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(child: Padding(padding: const EdgeInsets.all(24),
+        Expanded(flex:1, child: Padding(padding: const EdgeInsets.all(24),
           child: Image.asset('assets/images/logo.png'),),),
-        Expanded(child: Container(
+        Expanded(flex: 3,child: Container(
           width: MediaQuery.of(context).size.width,
           child: Card(child: Padding(padding: const EdgeInsets.all(16),child:
             Column(
@@ -504,8 +509,13 @@ class BookingScreen extends ConsumerWidget{
                   Text('${context.read(selectedSalon).state.address}'.toUpperCase(),
                     style: GoogleFonts.robotoMono(),),
                 ],),
-                ElevatedButton(onPressed: ()=> confirmBooking(context), child: Text('Confirm'),
-                style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black26)),)
+                SizedBox(height: 8,),
+                ElevatedButton(
+                  onPressed: ()=> confirmBooking(context),
+                  child: Text('Confirm'),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.black26)),
+                )
               ],
             ),),),
         ),)

@@ -43,7 +43,9 @@ dependencies:
   flutter_datetime_picker: any
   ntp: any
   add_2_calendar: any
+  chips_choice: any
   dcdg: any
+
 
 
 dev_dependencies:
