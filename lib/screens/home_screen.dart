@@ -104,8 +104,8 @@ class HomePage extends ConsumerWidget{
                             child:Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.shopping_cart, size: 50,),
-                                Text('Cart', style: GoogleFonts.robotoMono(),)
+                                Icon(Icons.web, size: 50,),
+                                Text('FAQ', style: GoogleFonts.robotoMono(),)
                               ] ,
                             ),
                           ),
